@@ -24,7 +24,7 @@ from manifold3d import CrossSection, Manifold
 
 # ----------------------------------------------------------------- PARAMETERS
 # Body
-W, H, T = 66.0, 114.0, 23.0   # outer width, height, thickness
+W, H, T = 66.0, 120.0, 23.0   # outer width, height, thickness
 R = 10.0                      # corner radius
 WALL = 2.0                    # side walls
 FRONT = 2.0                   # front face thickness
@@ -32,11 +32,11 @@ LID = 2.0                     # back cover thickness
 CHAMFER = 1.5                 # chamfer on the front and back edges
 FIT = 0.25                    # general fit clearance
 
-# 2.0" ST7789 display (measure!)
-DISP_ACTIVE = (30.6, 40.8)    # visible area (width, height)
-DISP_PCB = (36.0, 60.0)       # module PCB
+# 2.4" IPS ST7789 display, compact PCB without SD slot (measure!)
+DISP_ACTIVE = (36.72, 48.96)   # visible area (width, height)
+DISP_PCB = (43.0, 66.0)       # module PCB
 DISP_MARGIN_TOP = 6.0         # from the PCB top edge to the visible area
-DISP_WINDOW_TOP = 104.0       # Y of the window top on the case
+DISP_WINDOW_TOP = 110.0       # Y of the window top on the case
 DISP_WIN_EXTRA = 0.5          # window margin around the visible area
 DISP_RIB_H = 3.5              # height of the corner ribs locating the PCB
 

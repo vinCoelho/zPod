@@ -16,7 +16,7 @@ An MP3 player with a virtual pet for a 6-year-old. Built from scratch: electroni
 | # | Topic | Decision | Reason | Date |
 |---|-------|----------|--------|------|
 | 1 | Audio output | Built-in speaker + wired headphones (3.5 mm jack). No Bluetooth. | Works standalone, no pairing; wired headphones allow volume limiting. Frees us to use the ESP32-S3 (which has no Bluetooth audio). | 2026-11-16 |
-| 2 | Display | ~2" rectangular color IPS (ST7789, 240×320) | Cheap, colorful, fits the pet plus the song name; smooth animation on the ESP32-S3. | 2026-11-16 |
+| 2 | Display | 2.4" rectangular color IPS (ST7789, 240×320). Revised from 2.0" after seeing the case preview. | The 2.0" left wide bezels on the 66 mm front. Same resolution and driver, so firmware and pins are unchanged; the case grew 6 mm taller. | 2026-11-16 |
 | 3 | Controls | Large physical buttons: play/pause, previous, next, volume +, volume − | Usable without looking, sturdy, colorful printed caps. | 2026-11-16 |
 | 4 | Assembly | Separate modules hand-wired and soldered (the builder is comfortable soldering) | Cheaper and more flexible; optimized case. | 2026-11-16 |
 | 5 | Power on/off | Soft power: button + deep sleep, no physical switch cutting the battery | The pet must animate on power on and off, which needs the processor alive during the transition. (Follows from the premises; revisable.) | 2026-11-16 |
@@ -47,7 +47,7 @@ An MP3 player with a virtual pet for a 6-year-old. Built from scratch: electroni
 ## Risks and things to validate on the bench
 
 1. **Standby current.** The DevKit has a power LED and a USB-serial chip that are always on; in deep sleep the whole thing may draw a few mA and drain 1200 mAh in 1–2 weeks. Measure with a multimeter. Mitigations, in order: (a) remove the DevKit's power LED; (b) build the soft-latch circuit (AO3401 + 2N7002), which truly cuts the battery on power off. The latch parts are already on the shopping list.
-2. **Real module dimensions.** AliExpress sellers vary by a few millimetres. The case is parametric (`case/zpod_case.py`): measure everything with calipers on arrival and regenerate the STLs before the final print.
+2. **Real module dimensions.** AliExpress sellers vary by a few millimetres. The 2.4" display PCB is the least certain: the model assumes 43 × 66 mm, and the common red board with an SD slot (~77 mm long) does not fit. The case is parametric (`case/zpod_case.py`): measure everything with calipers on arrival and regenerate the STLs before the final print.
 3. **PCM5102A driving headphones.** It is a line-level DAC, not a headphone amplifier. It works well with kids' headphones, but validate volume and distortion with the actual pair.
 4. **LiPo battery from AliExpress.** Shipping to Brazil is sometimes blocked or slow; if so, buy the 603450 locally.
 
@@ -58,7 +58,7 @@ Prices estimated for November 2026 in Brazilian reais, taxes included, not check
 | # | Item | Search for | Qty | Estimate |
 |---|------|-----------|-----|----------|
 | 1 | Board | "ESP32-S3 DevKitC-1 N16R8", **headers not soldered** | 1 (ideally 2) | R$ 35–50 each |
-| 2 | Display | "2.0 inch IPS TFT ST7789V 240x320 SPI", 8 pins | 1 | R$ 20–30 |
+| 2 | Display | "2.4 inch IPS TFT ST7789 240x320 SPI", **compact PCB (~43 × 66 mm) without SD card slot**; not the TN/ILI9341 version | 1 | R$ 30–45 |
 | 3 | Amplifier | "MAX98357A I2S amplifier module" | 1 | R$ 8–15 |
 | 4 | DAC | "PCM5102A I2S DAC module" (GY-PCM5102) | 1 | R$ 15–25 |
 | 5 | Speaker | 28 mm, 8 Ω, 2 W, up to 6 mm tall | 2 | R$ 8–15 |
@@ -77,7 +77,7 @@ Prices estimated for November 2026 in Brazilian reais, taxes included, not check
 | 18 | Soft latch (optional) | AO3401 (P-MOSFET), 2N7002, 1N5819 diode | kits | R$ 10–15 |
 | 19 | Passives | 1/4 W resistor kit; 470 µF 10 V electrolytic capacitor | kit | R$ 12–18 |
 
-**Estimated total: R$ 250–380**, excluding tools (soldering iron, multimeter, calipers) and filament.
+**Estimated total: R$ 260–395**, excluding tools (soldering iron, multimeter, calipers) and filament.
 
 ## Pin map (ESP32-S3 DevKitC-1 N16R8)
 
@@ -116,7 +116,7 @@ Avoided: 0, 3, 45, 46 (boot), 19/20 (USB), 35–37 (PSRAM), 43/44 (serial), 48 (
 
 Parametric source in `case/zpod_case.py`; STLs in `case/stl/`; previews in `case/preview*.png`.
 
-**Outer dimensions:** 66 × 114 × 23 mm, 10 mm corner radius, 2 mm walls.
+**Outer dimensions:** 66 × 120 × 23 mm, 10 mm corner radius, 2 mm walls.
 
 | File | Part | How to print |
 |------|------|--------------|
