@@ -1,19 +1,19 @@
-"""Carcaça paramétrica do zPod (v0.1).
+"""Parametric zPod case (v0.1).
 
-Gera os STL em case/stl/. Rodar com:
+Writes the STLs to case/stl/. Run with:
     case/.venv/bin/python case/zpod_case.py
 
-Sistema de coordenadas do aparelho montado (mm):
-    X = largura, Y = altura (0 = base, onde ficam USB-C e fone), Z = espessura
-    (0 = face da frente, T = face de trás).
+Coordinate system of the assembled device (mm):
+    X = width, Y = height (0 = bottom edge, where USB-C and headphone jack are),
+    Z = thickness (0 = front face, T = back face).
 
-Peças:
-    frente   - bandeja com a face frontal e as quatro paredes (imprime de face para baixo)
-    traseira - tampa parafusada com grade do alto-falante e berço do TP4056
-    botões   - 1 play + 2 pular + 2 volume
+Parts:
+    front   - tray with the front face and the four walls (prints face down)
+    back    - screwed cover with the speaker grille and the TP4056 cradle
+    buttons - 1 play + 2 skip + 2 volume
 
-TODAS as medidas de componentes abaixo são nominais. Medir as peças reais com
-paquímetro e ajustar a seção PARÂMETROS antes da impressão final.
+ALL component dimensions below are nominal. Measure the real parts with
+calipers and adjust the PARAMETERS section before the final print.
 """
 from pathlib import Path
 import math
@@ -22,77 +22,77 @@ import numpy as np
 import trimesh
 from manifold3d import CrossSection, Manifold
 
-# ----------------------------------------------------------------- PARÂMETROS
-# Corpo
-W, H, T = 66.0, 114.0, 23.0   # largura, altura, espessura externas
-R = 10.0                      # raio dos cantos
-WALL = 2.0                    # paredes laterais
-FRONT = 2.0                   # espessura da face frontal
-LID = 2.0                     # espessura da tampa traseira
-CHAMFER = 1.5                 # chanfro nas bordas da frente e de trás
-FIT = 0.25                    # folga geral de encaixe
+# ----------------------------------------------------------------- PARAMETERS
+# Body
+W, H, T = 66.0, 114.0, 23.0   # outer width, height, thickness
+R = 10.0                      # corner radius
+WALL = 2.0                    # side walls
+FRONT = 2.0                   # front face thickness
+LID = 2.0                     # back cover thickness
+CHAMFER = 1.5                 # chamfer on the front and back edges
+FIT = 0.25                    # general fit clearance
 
-# Tela 2.0" ST7789 (medir!)
-DISP_ACTIVE = (30.6, 40.8)    # área visível (largura, altura)
-DISP_PCB = (36.0, 60.0)       # placa do módulo
-DISP_MARGIN_TOP = 6.0         # da borda de cima da placa até a área visível
-DISP_WINDOW_TOP = 104.0       # Y do topo da janela na carcaça
-DISP_WIN_EXTRA = 0.5          # folga da janela em volta da área visível
-DISP_RIB_H = 3.5              # altura das cantoneiras que posicionam a placa
+# 2.0" ST7789 display (measure!)
+DISP_ACTIVE = (30.6, 40.8)    # visible area (width, height)
+DISP_PCB = (36.0, 60.0)       # module PCB
+DISP_MARGIN_TOP = 6.0         # from the PCB top edge to the visible area
+DISP_WINDOW_TOP = 104.0       # Y of the window top on the case
+DISP_WIN_EXTRA = 0.5          # window margin around the visible area
+DISP_RIB_H = 3.5              # height of the corner ribs locating the PCB
 
-# Botões (chave táctil 6x6x5 em placa perfurada, passo 2,54 mm)
+# Buttons (6x6x5 tactile switch on perfboard, 2.54 mm pitch)
 PITCH = 2.54
 BTN_CENTER = (W / 2, 26.0)
-BTN_STEP = 6 * PITCH          # distância do play aos outros botões
+BTN_STEP = 6 * PITCH          # distance from play to the other buttons
 BTN_D_PLAY = 12.0
 BTN_D_SMALL = 10.5
-BTN_FLANGE = 1.25             # aba que impede o botão de sair pela frente
+BTN_FLANGE = 1.25             # flange that keeps the button from falling out the front
 BTN_FLANGE_T = 1.2
-BTN_PROUD = 1.4               # quanto o botão fica para fora
-BTN_GAP = 0.3                 # folga radial do furo
-SWITCH_H = 5.0                # altura total da chave táctil
-POST_DX = 7.5 * PITCH         # postes da placa perfurada: meia distância em X
-POST_DY = 7 * PITCH           # idem em Y
+BTN_PROUD = 1.4               # how far the button sticks out
+BTN_GAP = 0.3                 # radial hole clearance
+SWITCH_H = 5.0                # total tactile switch height
+POST_DX = 7.5 * PITCH         # perfboard posts: half spacing in X
+POST_DY = 7 * PITCH           # same in Y
 POST_D = 6.5
 
-# Fixação (inserto térmico M2,5 x 4, parafuso M2,5 x 6)
+# Fasteners (M2.5 x 4 heat-set insert, M2.5 x 6 screw)
 INSERT_D = 3.2
 INSERT_DEPTH = 7.0
 SCREW_D = 2.9
 SCREW_HEAD_D = 5.2
 SCREW_HEAD_H = 1.0
 BOSS_D = 7.0
-BOSS_INSET = 6.5              # distância do centro do boss às paredes externas
+BOSS_INSET = 6.5              # distance from boss centre to the outer walls
 
-# Tampa
+# Cover
 LIP_T = 1.5
 LIP_H = 2.5
 
-# TP4056 USB-C (medir!)
-USB_X = 45.0                  # centro do conector em X
-USB_OPEN = (10.0, 4.0)        # abertura (largura, altura)
-TP_PCB = (17.5, 28.0, 1.6)    # largura, comprimento, espessura da placa
-TP_CONN_H = 3.3               # altura do conector sobre a placa
+# TP4056 USB-C (measure!)
+USB_X = 45.0                  # connector centre in X
+USB_OPEN = (10.0, 4.0)        # opening (width, height)
+TP_PCB = (17.5, 28.0, 1.6)    # PCB width, length, thickness
+TP_CONN_H = 3.3               # connector height above the PCB
 
-# Jack de fone PJ-307 soldado na placa perfurada dos botões (medir!)
+# PJ-307 headphone jack soldered to the button perfboard (measure!)
 JACK_X = 24.0
 JACK_D = 7.0
-JACK_AXIS = 2.5               # altura do eixo do jack acima da placa perfurada
+JACK_AXIS = 2.5               # jack axis height above the perfboard
 
-# Alto-falante 28 mm
+# 28 mm speaker
 SPK_CENTER = (19.0, 29.0)
 SPK_D = 28.0
 SPK_RING_H = 3.0
 
-# Touch TTP223 (rebaixo na parede de cima)
-TOUCH_POCKET = (16.0, 12.0, 0.8)   # largura X, altura Z, profundidade
+# TTP223 touch sensor (pocket in the top wall)
+TOUCH_POCKET = (16.0, 12.0, 0.8)   # X width, Z height, depth
 TOUCH_Z = 14.0
 
 SEG = 64
 # ---------------------------------------------------------------------------
 
-Z_LID = T - LID                       # plano interno da tampa
-Z_PERF = FRONT + BTN_FLANGE_T + 0.2 + SWITCH_H   # face da placa perfurada voltada à frente
+Z_LID = T - LID                       # inner plane of the cover
+Z_PERF = FRONT + BTN_FLANGE_T + 0.2 + SWITCH_H   # perfboard face pointing to the front
 BOSSES = [(BOSS_INSET, BOSS_INSET), (W - BOSS_INSET, BOSS_INSET),
           (BOSS_INSET, H - BOSS_INSET), (W - BOSS_INSET, H - BOSS_INSET)]
 POSTS = [(BTN_CENTER[0] + sx * POST_DX, BTN_CENTER[1] + sy * POST_DY)
@@ -107,7 +107,7 @@ BUTTONS = {
 
 
 def rrect(inset=0.0):
-    """Contorno arredondado do aparelho, encolhido por `inset`."""
+    """Rounded device outline, shrunk by `inset`."""
     r = max(R - inset, 0.5)
     c = CrossSection.circle(r, SEG)
     pts = [(inset + r, inset + r), (W - inset - r, inset + r),
@@ -143,18 +143,18 @@ def disp_rects():
 
 
 def make_front():
-    # casca externa com chanfro na borda da frente
+    # outer shell with a chamfer on the front edge
     outer = Manifold.batch_hull([slab(CHAMFER, 0, 0.01), slab(0, CHAMFER, Z_LID)])
     body = outer - slab(WALL, FRONT, Z_LID + 1)
 
     add = []
-    # bosses dos parafusos da tampa
+    # cover screw bosses
     for x, y in BOSSES:
         add.append(cyl(x, y, FRONT - 0.1, Z_LID, BOSS_D))
-    # postes da placa perfurada dos botões
+    # button perfboard posts
     for x, y in POSTS:
         add.append(cyl(x, y, FRONT - 0.1, Z_PERF, POST_D))
-    # cantoneiras da tela
+    # display corner ribs
     _, (px0, py0, px1, py1) = disp_rects()
     t, L, z0, z1 = 1.2, 7.0, FRONT - 0.1, FRONT + DISP_RIB_H
     for cx, sx in ((px0 - FIT, -1), (px1 + FIT, 1)):
@@ -166,28 +166,28 @@ def make_front():
             ya, yb = sorted((cy, cy + sy * t))
             add.append(box(xa, ya, z0, xb, yb, z1))
     body = body + union(add)
-    body = body ^ outer            # nada sai para fora da casca
+    body = body ^ outer            # nothing pokes outside the shell
 
     cut = []
-    # janela da tela
+    # display window
     (wx0, wy0, wx1, wy1), _ = disp_rects()
     cut.append(box(wx0, wy0, -1, wx1, wy1, FRONT + 0.01))
-    # furos dos botões
+    # button holes
     for x, y, d in BUTTONS.values():
         cut.append(cyl(x, y, -1, FRONT + 0.01, d + 2 * BTN_GAP))
-    # furos dos insertos
+    # insert holes
     for x, y in BOSSES:
         cut.append(cyl(x, y, Z_LID - INSERT_DEPTH, Z_LID + 1, INSERT_D))
     for x, y in POSTS:
         cut.append(cyl(x, y, FRONT + 1.2, Z_PERF + 1, INSERT_D))
-    # USB-C: rasgo na parede de baixo, aberto para a tampa
+    # USB-C: slot in the bottom wall, open toward the cover
     usb_z0 = Z_LID - TP_PCB[2] - TP_CONN_H - 0.4
     cut.append(box(USB_X - USB_OPEN[0] / 2, -1, usb_z0, USB_X + USB_OPEN[0] / 2, WALL + 0.01, Z_LID + 1))
-    # jack de fone: furo redondo na parede de baixo
+    # headphone jack: round hole in the bottom wall
     jack_z = Z_PERF + 1.6 + JACK_AXIS
     cut.append(Manifold.cylinder(WALL + 2, JACK_D / 2, JACK_D / 2, SEG)
                .rotate([-90, 0, 0]).translate([JACK_X, -1, jack_z]))
-    # rebaixo do touch na parede de cima
+    # touch pocket in the top wall
     pw, ph, pd = TOUCH_POCKET
     cut.append(box(W / 2 - pw / 2, H - WALL - 0.01, TOUCH_Z - ph / 2,
                    W / 2 + pw / 2, H - WALL + pd, TOUCH_Z + ph / 2))
@@ -197,20 +197,20 @@ def make_front():
 def make_back():
     outer = Manifold.batch_hull([slab(0, Z_LID, T - CHAMFER), slab(CHAMFER, T - 0.01, T)])
     add = []
-    # aba que encaixa por dentro das paredes
+    # lip that fits inside the walls
     lip = slab(WALL + FIT, Z_LID - LIP_H, Z_LID + 0.1) - slab(WALL + FIT + LIP_T, Z_LID - LIP_H - 1, Z_LID + 1)
     for x, y in BOSSES:
         lip = lip - cyl(x, y, 0, T, BOSS_D + 2 * FIT + 0.4)
     tw, tl, _ = TP_PCB
     lip = lip - box(USB_X - tw / 2 - 2.5, 0, 0, USB_X + tw / 2 + 2.5, WALL + FIT + LIP_T + 1, T)
     add.append(lip)
-    # anel do alto-falante
+    # speaker ring
     sx, sy = SPK_CENTER
     ring = cyl(sx, sy, Z_LID - SPK_RING_H, Z_LID + 0.1, SPK_D + 2 * FIT + 2.4) \
         - cyl(sx, sy, 0, T, SPK_D + 2 * FIT)
-    ring = ring - box(sx - 3, sy, 0, sx + 3, sy + SPK_D, T)   # passagem dos fios
+    ring = ring - box(sx - 3, sy, 0, sx + 3, sy + SPK_D, T)   # wire passage
     add.append(ring)
-    # berço do TP4056: dois trilhos e um batente no fundo
+    # TP4056 cradle: two rails and an end stop
     y0 = WALL
     for s in (-1, 1):
         xa = USB_X + s * (tw / 2 + FIT)
@@ -224,7 +224,7 @@ def make_back():
     for x, y in BOSSES:
         cut.append(cyl(x, y, Z_LID - 1, T + 1, SCREW_D))
         cut.append(cyl(x, y, T - SCREW_HEAD_H, T + 1, SCREW_HEAD_D))
-    # grade do alto-falante: furos em anéis concêntricos
+    # speaker grille: holes in concentric rings
     cut.append(cyl(sx, sy, Z_LID - 1, T + 1, 2.0))
     for radius, n in ((3.6, 6), (7.2, 12), (10.8, 18)):
         for i in range(n):
@@ -234,8 +234,8 @@ def make_back():
 
 
 def icon(name, s):
-    """Símbolo em relevo, cabendo num círculo de raio s."""
-    def tri(x0, x1):   # triângulo apontando de x0 para x1
+    """Raised symbol fitting in a circle of radius s."""
+    def tri(x0, x1):   # triangle pointing from x0 to x1
         h = abs(x1 - x0) * 0.6
         pts = [(x0, -h), (x1, 0), (x0, h)]
         if x1 < x0:
@@ -254,7 +254,7 @@ def icon(name, s):
 
 
 def make_button(name):
-    """Botão na orientação de impressão: aba na mesa, símbolo para cima."""
+    """Button in print orientation: flange on the bed, symbol up."""
     _, _, d = BUTTONS[name]
     h = BTN_FLANGE_T + FRONT + BTN_PROUD
     b = cyl(0, 0, 0, BTN_FLANGE_T, d + 2 * BTN_FLANGE)
@@ -275,8 +275,8 @@ def main():
     front = make_front()
     back = make_back()
     parts = {
-        "zpod_front": front,                                   # já de face para baixo
-        "zpod_back": back.rotate([180, 0, 0]).translate([0, H, T]),  # face externa na mesa
+        "zpod_front": front,                                   # already face down
+        "zpod_back": back.rotate([180, 0, 0]).translate([0, H, T]),  # outer face on the bed
     }
     for name in BUTTONS:
         parts[f"zpod_button_{name}"] = make_button(name)
@@ -285,12 +285,12 @@ def main():
         tm.export(out / f"{name}.stl")
         size = tm.bounds[1] - tm.bounds[0]
         print(f"{name:24s} {size[0]:6.1f} x {size[1]:6.1f} x {size[2]:5.1f} mm  "
-              f"vol {tm.volume / 1000:5.1f} cm3  estanque={tm.is_watertight}  corpos={tm.body_count}")
-    # conferência: frente e traseira montadas não podem se interpenetrar
+              f"vol {tm.volume / 1000:5.1f} cm3  watertight={tm.is_watertight}  bodies={tm.body_count}")
+    # check: assembled front and back must not intersect
     inter = (front ^ back).volume()
-    print(f"interferência frente x traseira: {inter:.2f} mm3")
-    print(f"placa perfurada dos botões: face frontal em Z={Z_PERF:.1f} mm; "
-          f"postes em {[(round(x, 2), round(y, 2)) for x, y in POSTS]}")
+    print(f"front/back interference: {inter:.2f} mm3")
+    print(f"button perfboard: front face at Z={Z_PERF:.1f} mm; "
+          f"posts at {[(round(x, 2), round(y, 2)) for x, y in POSTS]}")
     return parts, front, back
 
 

@@ -1,25 +1,25 @@
 # zPod
 
-MP3 player feito em casa para uma criança de 6 anos, com um pet virtual na tela que reage à música.
+A homemade MP3 player for a 6-year-old, with an on-screen virtual pet that reacts to the music.
 
-- **Cérebro:** ESP32-S3 DevKitC-1 N16R8
-- **Tela:** IPS 2.0" ST7789 (240×320)
-- **Áudio:** MAX98357A (alto-falante) + PCM5102A (fone P2)
-- **Energia:** LiPo 603450 1200 mAh, carga por USB-C (TP4056)
-- **Músicas:** microSD interno, envio por Wi-Fi em "modo pais"
-- **Carcaça:** impressa em 3D, 66 × 114 × 23 mm
+- **Brain:** ESP32-S3 DevKitC-1 N16R8
+- **Display:** 2.0" IPS ST7789 (240×320)
+- **Audio:** MAX98357A (speaker) + PCM5102A (3.5 mm headphone jack)
+- **Power:** LiPo 603450 1200 mAh, USB-C charging (TP4056)
+- **Music:** internal microSD, Wi-Fi upload in "parent mode"
+- **Case:** 3D-printed, 66 × 114 × 23 mm
 
-## Estrutura
+## Structure
 
-| Caminho | Conteúdo |
-|---------|----------|
-| [DECISIONS.md](DECISIONS.md) | Registro de decisões, lista de compras, mapa de pinos, riscos |
-| [case/zpod_case.py](case/zpod_case.py) | Modelo paramétrico da carcaça |
-| [case/stl/](case/stl/) | STL prontos para fatiar |
+| Path | Contents |
+|------|----------|
+| [DECISIONS.md](DECISIONS.md) | Decision log, shopping list, pin map, risks |
+| [case/zpod_case.py](case/zpod_case.py) | Parametric case model |
+| [case/stl/](case/stl/) | STLs ready to slice |
 
-![Prévia da carcaça](case/preview.png)
+![Case preview](case/preview.png)
 
-## Regerar a carcaça
+## Regenerating the case
 
 ```bash
 python3 -m venv case/.venv
@@ -29,4 +29,4 @@ case/.venv/bin/python case/zpod_case.py
 
 ## Status
 
-Fase de projeto: decisões tomadas, lista de compras fechada, carcaça v0.1 gerada com medidas nominais. Firmware ainda não iniciado.
+Design phase: decisions made, shopping list closed, case v0.1 generated from nominal dimensions. Firmware not started yet.
