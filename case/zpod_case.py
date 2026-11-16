@@ -1,7 +1,7 @@
 """Carcaça paramétrica do zPod (v0.1).
 
-Gera os STL em carcaca/stl/. Rodar com:
-    carcaca/.venv/bin/python carcaca/zpod_case.py
+Gera os STL em case/stl/. Rodar com:
+    case/.venv/bin/python case/zpod_case.py
 
 Sistema de coordenadas do aparelho montado (mm):
     X = largura, Y = altura (0 = base, onde ficam USB-C e fone), Z = espessura
@@ -99,10 +99,10 @@ POSTS = [(BTN_CENTER[0] + sx * POST_DX, BTN_CENTER[1] + sy * POST_DY)
          for sx in (-1, 1) for sy in (-1, 1)]
 BUTTONS = {
     "play": (BTN_CENTER[0], BTN_CENTER[1], BTN_D_PLAY),
-    "anterior": (BTN_CENTER[0] - BTN_STEP, BTN_CENTER[1], BTN_D_SMALL),
-    "proxima": (BTN_CENTER[0] + BTN_STEP, BTN_CENTER[1], BTN_D_SMALL),
-    "vol_mais": (BTN_CENTER[0], BTN_CENTER[1] + BTN_STEP, BTN_D_SMALL),
-    "vol_menos": (BTN_CENTER[0], BTN_CENTER[1] - BTN_STEP, BTN_D_SMALL),
+    "prev": (BTN_CENTER[0] - BTN_STEP, BTN_CENTER[1], BTN_D_SMALL),
+    "next": (BTN_CENTER[0] + BTN_STEP, BTN_CENTER[1], BTN_D_SMALL),
+    "vol_up": (BTN_CENTER[0], BTN_CENTER[1] + BTN_STEP, BTN_D_SMALL),
+    "vol_down": (BTN_CENTER[0], BTN_CENTER[1] - BTN_STEP, BTN_D_SMALL),
 }
 
 
@@ -243,12 +243,12 @@ def icon(name, s):
         return CrossSection([pts])
     if name == "play":
         return tri(-0.45 * s, 0.6 * s)
-    if name == "proxima":
+    if name == "next":
         return tri(-0.7 * s, 0.0) + tri(0.0, 0.7 * s)
-    if name == "anterior":
+    if name == "prev":
         return tri(0.7 * s, 0.0) + tri(0.0, -0.7 * s)
     bar = CrossSection.square([1.3 * s, 0.34 * s], True)
-    if name == "vol_menos":
+    if name == "vol_down":
         return bar
     return bar + bar.rotate(90)
 
@@ -275,11 +275,11 @@ def main():
     front = make_front()
     back = make_back()
     parts = {
-        "zpod_frente": front,                                   # já de face para baixo
-        "zpod_traseira": back.rotate([180, 0, 0]).translate([0, H, T]),  # face externa na mesa
+        "zpod_front": front,                                   # já de face para baixo
+        "zpod_back": back.rotate([180, 0, 0]).translate([0, H, T]),  # face externa na mesa
     }
     for name in BUTTONS:
-        parts[f"zpod_botao_{name}"] = make_button(name)
+        parts[f"zpod_button_{name}"] = make_button(name)
     for name, m in parts.items():
         tm = to_trimesh(m)
         tm.export(out / f"{name}.stl")

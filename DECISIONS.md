@@ -47,7 +47,7 @@ MP3 player com "pet" virtual para uma criança de 6 anos. Projeto do zero: eletr
 ## Riscos e pontos a validar na bancada
 
 1. **Consumo em repouso.** A DevKit tem LED de energia e chip USB-serial sempre ligados; em deep sleep o conjunto pode gastar alguns mA e esvaziar 1200 mAh em 1–2 semanas. Medir com multímetro. Mitigações, em ordem: (a) remover o LED de energia da DevKit; (b) montar o circuito de "soft latch" (AO3401 + 2N7002), que corta a bateria de verdade ao desligar. As peças do latch já estão na lista de compras.
-2. **Dimensões reais dos módulos.** Vendedores do AliExpress variam alguns milímetros. A carcaça é paramétrica (`carcaca/zpod_case.py`): medir tudo com paquímetro quando chegar e regerar os STL antes da impressão final.
+2. **Dimensões reais dos módulos.** Vendedores do AliExpress variam alguns milímetros. A carcaça é paramétrica (`case/zpod_case.py`): medir tudo com paquímetro quando chegar e regerar os STL antes da impressão final.
 3. **PCM5102A com fone.** Ele é um DAC de linha, não um amplificador de fone. Funciona bem com fones infantis, mas validar volume e distorção com o fone que ela vai usar.
 4. **Bateria LiPo no AliExpress.** Envio para o Brasil às vezes é barrado ou demora; se complicar, comprar a 603450 no Mercado Livre.
 
@@ -114,15 +114,15 @@ Evitados: 0, 3, 45, 46 (boot), 19/20 (USB), 35–37 (PSRAM), 43/44 (serial), 48 
 
 ## Carcaça (v0.1)
 
-Fonte paramétrica em `carcaca/zpod_case.py`; STL em `carcaca/stl/`; prévias em `carcaca/previa*.png`.
+Fonte paramétrica em `case/zpod_case.py`; STL em `case/stl/`; prévias em `case/preview*.png`.
 
 **Dimensões externas:** 66 × 114 × 23 mm, cantos com raio de 10 mm, paredes de 2 mm.
 
 | Arquivo | Peça | Como imprimir |
 |---------|------|---------------|
-| `zpod_frente.stl` | Bandeja: face frontal + 4 paredes, janela da tela, furos dos botões, postes e bosses | Face frontal na mesa, sem suporte |
-| `zpod_traseira.stl` | Tampa com grade e anel do alto-falante, berço do TP4056 | Face externa na mesa, sem suporte |
-| `zpod_botao_*.stl` (5) | Botões com símbolo em relevo e aba de retenção | Aba na mesa, sem suporte; cor contrastante |
+| `zpod_front.stl` | Bandeja: face frontal + 4 paredes, janela da tela, furos dos botões, postes e bosses | Face frontal na mesa, sem suporte |
+| `zpod_back.stl` | Tampa com grade e anel do alto-falante, berço do TP4056 | Face externa na mesa, sem suporte |
+| `zpod_button_*.stl` (5) | Botões com símbolo em relevo e aba de retenção | Aba na mesa, sem suporte; cor contrastante |
 
 Sugestão: PLA ou PETG, camada 0,2 mm (0,12 mm nos botões), 3 paredes, 15% de preenchimento.
 

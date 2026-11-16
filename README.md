@@ -13,18 +13,18 @@ MP3 player feito em casa para uma criança de 6 anos, com um pet virtual na tela
 
 | Caminho | Conteúdo |
 |---------|----------|
-| [DECISOES.md](DECISOES.md) | Registro de decisões, lista de compras, mapa de pinos, riscos |
-| [carcaca/zpod_case.py](carcaca/zpod_case.py) | Modelo paramétrico da carcaça |
-| [carcaca/stl/](carcaca/stl/) | STL prontos para fatiar |
+| [DECISIONS.md](DECISIONS.md) | Registro de decisões, lista de compras, mapa de pinos, riscos |
+| [case/zpod_case.py](case/zpod_case.py) | Modelo paramétrico da carcaça |
+| [case/stl/](case/stl/) | STL prontos para fatiar |
 
-![Prévia da carcaça](carcaca/previa.png)
+![Prévia da carcaça](case/preview.png)
 
 ## Regerar a carcaça
 
 ```bash
-python3 -m venv carcaca/.venv
-carcaca/.venv/bin/pip install -r carcaca/requirements.txt
-carcaca/.venv/bin/python carcaca/zpod_case.py
+python3 -m venv case/.venv
+case/.venv/bin/pip install -r case/requirements.txt
+case/.venv/bin/python case/zpod_case.py
 ```
 
 ## Status
