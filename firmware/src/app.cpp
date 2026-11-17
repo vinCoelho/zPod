@@ -242,7 +242,7 @@ void App::tick(float dt) {
 
 void App::render(lgfx::LovyanGFX& g) {
   drawScene(g);
-  pet_.draw(g, kScreenW / 2, kGroundY, pet_.mood() == Mood::Sleep ? 0x1E2947u : 0x6BBF59u);
+  pet_.draw(g, kScreenW / 2, kGroundY, pet_.mood() == Mood::Sleep ? 0x0E0A1Cu : 0x1A1030u);
   drawStatusIcons(g);
   if (volumeOverlay_ > 0) drawVolume(g);
   drawStrip(g);
@@ -250,7 +250,8 @@ void App::render(lgfx::LovyanGFX& g) {
 
 void App::drawScene(lgfx::LovyanGFX& g) {
   const bool night = pet_.mood() == Mood::Sleep;
-  g.fillRect(0, 0, kScreenW, kStripY, night ? 0x1B2040u : 0xBFE9FFu);
+  const bool rocking = pet_.mood() == Mood::Dance;
+  g.fillRect(0, 0, kScreenW, kStripY, night ? 0x1B1433u : 0x5B2DB8u);   // stage backdrop
   if (night) {
     static const int16_t stars[][2] = {{24, 30}, {70, 64}, {110, 22}, {150, 52}, {196, 80},
                                        {40, 104}, {214, 26}, {176, 120}, {16, 150}};
@@ -260,21 +261,49 @@ void App::drawScene(lgfx::LovyanGFX& g) {
       g.fillSmoothCircle(s[0], s[1], tw > 0.6f ? 2 : 1, 0xFFF4B8u);
     }
     g.fillSmoothCircle(44, 48, 17, 0xFFF4B8u);            // moon
-    g.fillSmoothCircle(52, 42, 15, 0x1B2040u);
+    g.fillSmoothCircle(52, 42, 15, 0x1B1433u);
   } else {
-    for (int i = 0; i < 2; ++i) {                          // clouds drifting by
-      float cx = fmodf(time_ * (6 + 3 * i) + 150 * i, kScreenW + 120) - 60;
-      int cy = 50 + 44 * i;
-      g.fillEllipse(cx, cy, 26, 11, 0xFFFFFFu);
-      g.fillEllipse(cx - 14, cy - 8, 14, 10, 0xFFFFFFu);
-      g.fillEllipse(cx + 10, cy - 10, 16, 12, 0xFFFFFFu);
+    // Spotlights from the rig: they sweep while the music plays.
+    for (int s = -1; s <= 1; s += 2) {
+      float sweep = rocking ? 34 * sinf(time_ * 1.7f + (s > 0 ? 1.3f : 0)) : 0;
+      float ox = kScreenW / 2 + s * 62, tx = kScreenW / 2 + s * 18 + sweep;
+      g.fillTriangle(ox, -6, tx - 46, kGroundY + 8, tx + 46, kGroundY + 8,
+                     s > 0 ? 0x7446D6u : 0x6C3ECFu);
+      g.fillSmoothCircle(ox, 2, 9, 0xFFD23Fu);
+    }
+    g.fillEllipse(kScreenW / 2, kGroundY - 52, 86, 80, 0x8F63EEu);       // glow behind the pet
+    g.fillRect(0, 12, kScreenW, 3, 0x2A1757u);                           // lighting truss
+    // Stars on the backdrop, twinkling.
+    static const int16_t deco[][2] = {{26, 60}, {212, 70}, {58, 30}, {186, 34}};
+    int i = 0;
+    for (auto& d : deco) {
+      float r = 3 + 1.5f * sinf(time_ * 3 + i++);
+      g.fillTriangle(d[0], d[1] - 2 * r, d[0] - r, d[1], d[0] + r, d[1], 0xFFD23Fu);
+      g.fillTriangle(d[0], d[1] + 2 * r, d[0] - r, d[1], d[0] + r, d[1], 0xFFD23Fu);
+      g.fillTriangle(d[0] - 2 * r, d[1], d[0], d[1] - r, d[0], d[1] + r, 0xFFD23Fu);
+      g.fillTriangle(d[0] + 2 * r, d[1], d[0], d[1] - r, d[0], d[1] + r, 0xFFD23Fu);
     }
   }
-  g.fillEllipse(kScreenW / 2, kGroundY + 62, 210, 76, night ? 0x2C3A5Eu : 0x8FD97Au);
+  // Stage floor.
+  g.fillEllipse(kScreenW / 2, kGroundY + 62, 210, 76, night ? 0x120D24u : 0x2A1757u);
+  g.fillEllipseArc(kScreenW / 2, kGroundY + 62, 206, 210, 72, 76, 180, 360,
+                   night ? 0x241A45u : 0xFF5FA2u);
+  // Amp stacks at both sides; the speakers thump with the music.
+  for (int s = -1; s <= 1; s += 2) {
+    int ax = kScreenW / 2 + s * 99 - 19, ay = kGroundY - 52;
+    g.fillRoundRect(ax, ay, 38, 70, 4, night ? 0x0B0817u : 0x15102Au);
+    g.drawRoundRect(ax, ay, 38, 70, 4, night ? 0x241A45u : 0x4B3A86u);
+    float thump = rocking ? 1.5f * fabsf(sinf(time_ * 6.6f)) : 0;
+    for (int k = 0; k < 2; ++k) {
+      int cy = ay + 19 + k * 32;
+      g.fillSmoothCircle(ax + 19, cy, 12 + thump, night ? 0x1A1433u : 0x3B2F66u);
+      g.fillSmoothCircle(ax + 19, cy, 5 + thump, night ? 0x0B0817u : 0x15102Au);
+    }
+  }
 }
 
 void App::drawStatusIcons(lgfx::LovyanGFX& g) {
-  const uint32_t ink = pet_.mood() == Mood::Sleep ? 0xC9D1FFu : 0x33415Cu;
+  const uint32_t ink = 0xF2E9FFu;
   // Battery, top right.
   const int bx = kScreenW - 36, by = 8;
   g.drawRoundRect(bx, by, 26, 13, 3, ink);
@@ -292,7 +321,7 @@ void App::drawStatusIcons(lgfx::LovyanGFX& g) {
 
 void App::drawVolume(lgfx::LovyanGFX& g) {
   const int w = 176, h = 30, x = (kScreenW - w) / 2, y = 30;
-  g.fillRoundRect(x, y, w, h, h / 2, 0x2B2D42u);
+  g.fillRoundRect(x, y, w, h, h / 2, 0x17122Bu);
   // Speaker glyph.
   g.fillRect(x + 14, y + 11, 5, 8, 0xFFFFFFu);
   g.fillTriangle(x + 19, y + 11, x + 26, y + 6, x + 26, y + 24, 0xFFFFFFu);
@@ -300,13 +329,13 @@ void App::drawVolume(lgfx::LovyanGFX& g) {
   for (int i = 0; i < kVolumeSteps; ++i) {
     int bh = 5 + i * 15 / kVolumeSteps;
     g.fillRoundRect(x + 36 + i * 13, y + h - 6 - bh, 9, bh, 2,
-                    i < volume_ ? 0x7CE38Bu : 0x565A75u);
+                    i < volume_ ? 0xFF5FA2u : 0x565A75u);
   }
 }
 
 void App::drawStrip(lgfx::LovyanGFX& g) {
-  g.fillRect(0, kStripY, kScreenW, kScreenH - kStripY, 0x2B2D42u);
-  g.fillRect(0, kStripY, kScreenW, 3, pet_.mood() == Mood::Sleep ? 0x1B2040u : 0x6BBF59u);
+  g.fillRect(0, kStripY, kScreenW, kScreenH - kStripY, 0x17122Bu);
+  g.fillRect(0, kStripY, kScreenW, 3, pet_.mood() == Mood::Sleep ? 0x241A45u : 0xFF5FA2u);
 
   const char* title = hasMusic_ ? hal_.trackTitle(folder_, track_) : "Sem músicas";
   char sub[96];
@@ -319,7 +348,7 @@ void App::drawStrip(lgfx::LovyanGFX& g) {
   // Play / pause glyph.
   const int ix = 14, iy = kStripY + 26;
   if (playing_) {
-    g.fillTriangle(ix, iy - 9, ix, iy + 9, ix + 15, iy, 0x7CE38Bu);
+    g.fillTriangle(ix, iy - 9, ix, iy + 9, ix + 15, iy, 0xFF5FA2u);
   } else {
     g.fillRoundRect(ix, iy - 9, 5, 18, 2, 0xFFD166u);
     g.fillRoundRect(ix + 9, iy - 9, 5, 18, 2, 0xFFD166u);
@@ -361,10 +390,10 @@ void App::drawStrip(lgfx::LovyanGFX& g) {
 
   // Progress bar.
   const int px = 14, py = kStripY + 72, pw = kScreenW - 28, ph = 6;
-  g.fillRoundRect(px, py, pw, ph, 3, 0x565A75u);
+  g.fillRoundRect(px, py, pw, ph, 3, 0x3A335Cu);
   if (dur > 0) {
     int fill = pw * (pos > dur ? dur : pos) / dur;
-    if (fill > 0) g.fillRoundRect(px, py, fill < ph ? ph : fill, ph, 3, 0x7CE38Bu);
+    if (fill > 0) g.fillRoundRect(px, py, fill < ph ? ph : fill, ph, 3, 0xFF5FA2u);
   }
 }
 

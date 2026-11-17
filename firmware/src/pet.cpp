@@ -164,6 +164,7 @@ void Pet::draw(lgfx::LovyanGFX& g, int cx, int groundY, uint32_t shadowColor) co
   const uint32_t ink = 0x2B2140u;
   const uint32_t pink = 0xFF5FA2u;
   const uint32_t line = 0xFFFFFFu;                   // closed eyes, drawn on the dark body
+  const uint32_t bolt = 0xFFD23Fu;
 
   const float rx = kBodyRx * p.sx, ry = kBodyRy * p.sy;
   const float x = cx + p.dx;
@@ -194,6 +195,12 @@ void Pet::draw(lgfx::LovyanGFX& g, int cx, int groundY, uint32_t shadowColor) co
     g.fillTriangle(b0x, by - 12, b1x, by + 10, tx, ty, body);
     float kx = tx + (b0x + b1x - 2 * tx) * 0.19f, ky = ty + (by - ty) * 0.38f;
     g.fillTriangle(tx, ty, kx - s * 7, ky - 2, kx + s * 6, ky + 5, pink);
+  }
+
+  // Pink mohawk between the ears.
+  for (int i = -2; i <= 2; ++i) {
+    float mx = x + i * 7 * p.sx, top = y - ry - 20 + abs(i) * 5 + 2 * sinf(t_ * 5 + i);
+    g.fillTriangle(mx - 6, y - ry + 8, mx + 6, y - ry + 8, mx + i * 2, top, pink);
   }
 
   // Feet.
@@ -239,12 +246,11 @@ void Pet::draw(lgfx::LovyanGFX& g, int cx, int groundY, uint32_t shadowColor) co
     }
   }
 
-  // Small heart on the forehead.
+  // Lightning bolt on the forehead.
   {
-    float hx = x, hy = y - ry * 0.62f;
-    g.fillSmoothCircle(hx - 4, hy, 5, pink);
-    g.fillSmoothCircle(hx + 4, hy, 5, pink);
-    g.fillTriangle(hx - 9, hy + 1, hx + 9, hy + 1, hx, hy + 11, pink);
+    float hx = x, hy = y - ry * 0.66f;
+    g.fillTriangle(hx + 3, hy - 9, hx - 7, hy + 3, hx + 1, hy + 3, bolt);
+    g.fillTriangle(hx - 3, hy + 13, hx + 7, hy + 1, hx - 1, hy + 1, bolt);
   }
 
   // Mouth.
@@ -263,13 +269,26 @@ void Pet::draw(lgfx::LovyanGFX& g, int cx, int groundY, uint32_t shadowColor) co
       break;
   }
 
+  // Electric guitar while rocking out.
+  if (mood_ == Mood::Dance && !tired_ && reaction_ == Reaction::None) {
+    float gx = x - 10, gy = y + ry * 0.62f;
+    g.drawWideLine(gx + 6, gy - 4, x + rx + 20, y - 14, 3.0f, 0xF2E9FFu);      // neck
+    g.fillSmoothCircle(x + rx + 22, y - 16, 5, bolt);                          // headstock
+    g.fillEllipse(gx - 8, gy + 4, 19, 13, pink);                               // guitar body
+    g.fillEllipse(gx + 8, gy - 3, 11, 9, pink);
+    g.fillEllipse(gx - 8, gy + 4, 7, 5, 0xFFFFFFu);
+    g.fillSmoothCircle(gx - 26, gy + 4, 3, bolt);
+    g.fillSmoothCircle(gx - 2 + 4 * sinf(t_ * 13), gy - 9, 8, body);           // strumming hand
+    g.fillSmoothCircle(x + rx + 4, y - 4, 9, body);                            // hand on the neck
+  }
+
   // Mood extras.
   if (mood_ == Mood::Dance && !tired_) {
     for (int i = 0; i < 3; ++i) {                           // music notes drifting up
       float ph = fmodf(t_ * 0.45f + i * 0.37f, 1.0f);
       float nx = cx + (i == 1 ? 92 : (i == 0 ? -92 : -70)) + 6 * sinf(t_ * 2 + i);
       float ny = groundY - 60 - ph * 110;
-      uint32_t c = (i == 0) ? 0xFF8FB1u : (i == 1 ? 0x35C9B5u : 0xFFB02Eu);
+      uint32_t c = (i == 0) ? 0xFF5FA2u : (i == 1 ? 0xFFFFFFu : 0xFFD23Fu);
       g.fillEllipse(nx, ny, 6, 5, c);
       g.drawWideLine(nx + 5, ny, nx + 5, ny - 18, 1.5f, c);
       g.drawWideLine(nx + 5, ny - 18, nx + 12, ny - 14, 1.5f, c);
