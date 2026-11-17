@@ -14,10 +14,31 @@ A homemade MP3 player for a 6-year-old, with an on-screen virtual pet that react
 | Path | Contents |
 |------|----------|
 | [DECISIONS.md](DECISIONS.md) | Decision log, shopping list, pin map, risks |
+| [firmware/](firmware/) | PlatformIO project: ESP32-S3 firmware and desktop simulator |
 | [case/zpod_case.py](case/zpod_case.py) | Parametric case model |
 | [case/stl/](case/stl/) | STLs ready to slice |
 
 ![Case preview](case/preview.png)
+
+## The pet
+
+![Pet states in the simulator](firmware/preview.png)
+
+## Running the simulator
+
+Needs [PlatformIO](https://platformio.org/) and SDL2 (`brew install sdl2`).
+
+```bash
+cd firmware && pio run -e sim -t exec
+```
+
+Keys: Space = play/pause (hold = power off), ←/→ = previous/next (hold = folder), ↑/↓ = volume, T = touch the top, H = headphones, B = drain battery.
+
+## Flashing the device
+
+```bash
+cd firmware && pio run -e zpod -t upload
+```
 
 ## Regenerating the case
 
@@ -29,4 +50,4 @@ case/.venv/bin/python case/zpod_case.py
 
 ## Status
 
-Design phase: decisions made, shopping list closed, case v0.1 generated from nominal dimensions. Firmware not started yet.
+Parts on order. Case v0.1 generated from nominal dimensions. Firmware v0.1 (player + pet) runs in the simulator and compiles for the ESP32-S3, but has not run on hardware yet.

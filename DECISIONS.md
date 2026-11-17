@@ -28,6 +28,10 @@ An MP3 player with a virtual pet for a 6-year-old. Built from scratch: electroni
 | 11 | Form factor | Vertical, iPod-style: display on top, buttons in a cross below, touch on the top edge | Fits a small hand, simple internal layout. | 2026-11-16 |
 | 12 | Printing | Single-color parts, no AMS; contrast comes from printing body and buttons in different colors | Works on any A1, no purge waste. | 2026-11-16 |
 | 13 | Firmware | PlatformIO + Arduino (ESP32-audioI2S for MP3, LovyanGFX for display/pet, web server for upload) | Fastest path to a playing prototype. | 2026-11-16 |
+| 14 | Simulator | Desktop simulator: the same pet and UI code runs in an SDL window on the Mac | The pet can be tuned with the child before any hardware arrives; only audio and hardware wait. | 2026-11-16 |
+| 15 | Screen layout | Large pet scene (top 232 px) + song strip below (title, folder, track number, time, progress) | The pet is the star, but she always knows what is playing. | 2026-11-16 |
+| 16 | Play order | Sequential within the folder, resuming on power-on from the last song | Predictable for a child. | 2026-11-16 |
+| 17 | Rest | Playing: screen off after 30 s without input, music continues. Paused: pet yawns after 2 min, sleeps, device goes to deep sleep | Best for the 1200 mAh battery. | 2026-11-16 |
 
 ### Derived technical decisions (Claude's recommendations — revisable)
 
@@ -112,6 +116,26 @@ Avoided: 0, 3, 45, 46 (boot), 19/20 (USB), 35–37 (PSRAM), 43/44 (serial), 48 (
 | Low battery | Gets sleepy/hungry |
 | Power off | Waves goodbye and lies down |
 
+## Firmware (v0.1)
+
+PlatformIO project in `firmware/`. Shared code (`pet`, `app`, `buttons`, `text`) is platform independent and talks to the device through `hal.h`; `main_esp32.cpp` is the real hardware, `main_sim.cpp` the desktop simulator.
+
+| Control | Short press | Long press (0.9 s) |
+|---------|-------------|--------------------|
+| Play | Play / pause | Power off (pet waves goodbye) |
+| Next / Previous | Next / previous song (previous restarts the song after 3 s) | Next / previous folder |
+| Volume + / − | One step of 10; repeats while held | — |
+| Touch on top | Tickles the pet; wakes the screen or the sleeping pet | — |
+
+- Each frame is drawn into a 240×320 off-screen sprite in PSRAM and pushed whole: no flicker.
+- Audio decoding runs in its own task so drawing never starves it.
+- Volume is capped separately for speaker and headphones (`config.h`).
+- File names written by macOS with decomposed accents are recomposed for display.
+
+**Not done yet:** parent mode (Wi-Fi upload + OTA), pet colour/name chosen by the child, beat-synced dancing, soft-latch support.
+
+**Status:** the simulator builds and runs; the ESP32 build compiles but has never run on hardware.
+
 ## Case (v0.1)
 
 Parametric source in `case/zpod_case.py`; STLs in `case/stl/`; previews in `case/preview*.png`.
@@ -149,5 +173,5 @@ Suggested: PLA or PETG, 0.2 mm layers (0.12 mm for the buttons), 3 walls, 15% in
 
 1. Buy the components.
 2. Breadboard everything and validate audio, display, SD and standby current.
-3. Firmware: basic player → pet → parent mode (Wi-Fi upload + OTA).
+3. Firmware: flash v0.1 and fix what the real hardware reveals; then parent mode (Wi-Fi upload + OTA).
 4. Adjust the case to the real measurements and print.
