@@ -42,7 +42,7 @@ class Pet {
   float t_ = 0;
   float blink_ = 2.5f;
   bool tired_ = false;
-  uint32_t color_ = 0x8A6BFFu;
+  uint32_t color_ = 0x3B3350u;
 };
 
 }  // namespace zpod

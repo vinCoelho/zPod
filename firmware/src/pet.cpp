@@ -159,10 +159,11 @@ Pet::Pose Pet::pose() const {
 void Pet::draw(lgfx::LovyanGFX& g, int cx, int groundY, uint32_t shadowColor) const {
   const Pose p = pose();
   const uint32_t body = color_;
-  const uint32_t belly = mix(body, 0xFFFFFFu, 0.45f);
+  const uint32_t belly = 0xD9C2FAu;                  // lilac tummy and muzzle
   const uint32_t dark = mix(body, 0x000000u, 0.45f);
   const uint32_t ink = 0x2B2140u;
-  const uint32_t pink = 0xFF8FB1u;
+  const uint32_t pink = 0xFF5FA2u;
+  const uint32_t line = 0xFFFFFFu;                   // closed eyes, drawn on the dark body
 
   const float rx = kBodyRx * p.sx, ry = kBodyRy * p.sy;
   const float x = cx + p.dx;
@@ -172,13 +173,27 @@ void Pet::draw(lgfx::LovyanGFX& g, int cx, int groundY, uint32_t shadowColor) co
   float sh = 1 - fminf(p.lift, 40) / 80;
   g.fillEllipse(x, groundY + 3, 54 * p.sx * sh, 7 * sh, shadowColor);
 
-  // Antennas, wobbling a little.
+  // Little tail with a heart tip, wagging behind the body.
+  {
+    float wag = 5 * sinf(t_ * 4);
+    float bx = x - rx + 6, by = y + ry * 0.45f;
+    float mx = bx - 16, my2 = by - 4 + wag * 0.4f;
+    float tx = bx - 26, ty = by - 22 + wag;
+    g.drawWideLine(bx, by, mx, my2, 2.0f, dark);
+    g.drawWideLine(mx, my2, tx, ty, 2.0f, dark);
+    g.fillSmoothCircle(tx - 3, ty - 2, 4, pink);
+    g.fillSmoothCircle(tx + 3, ty - 2, 4, pink);
+    g.fillTriangle(tx - 7, ty - 1, tx + 7, ty - 1, tx, ty + 8, pink);
+  }
+
+  // Pointed ears with pink tips, leaning outwards and wobbling a little.
   for (int s = -1; s <= 1; s += 2) {
-    float wob = 4 * sinf(t_ * 3 + s) + p.dx * 0.15f;
-    float bx = x + s * 22 * p.sx, by = y - ry * 0.8f;
-    float tx = x + s * 32 * p.sx - wob, ty = y - ry - 18;
-    g.drawWideLine(bx, by, tx, ty, 2.5f, dark);
-    g.fillSmoothCircle(tx, ty, 6, pink);
+    float wob = 3 * sinf(t_ * 3 + s) + p.dx * 0.15f;
+    float b0x = x + s * 12 * p.sx, b1x = x + s * 44 * p.sx, by = y - ry * 0.62f;
+    float tx = x + s * 50 * p.sx - wob, ty = y - ry - 30;
+    g.fillTriangle(b0x, by - 12, b1x, by + 10, tx, ty, body);
+    float kx = tx + (b0x + b1x - 2 * tx) * 0.19f, ky = ty + (by - ty) * 0.38f;
+    g.fillTriangle(tx, ty, kx - s * 7, ky - 2, kx + s * 6, ky + 5, pink);
   }
 
   // Feet.
@@ -208,16 +223,28 @@ void Pet::draw(lgfx::LovyanGFX& g, int cx, int groundY, uint32_t shadowColor) co
   for (int s = -1; s <= 1; s += 2) {
     float ex = x + s * 23 * p.sx;
     if (p.happyEyes) {
-      g.fillArc(ex, ey + 6, 9, 13, 200, 340, ink);          // ^ ^
+      g.fillArc(ex, ey + 6, 9, 13, 200, 340, line);         // ^ ^
     } else if (p.eyeOpen < 0.2f) {
-      g.fillArc(ex, ey - 6, 9, 12, 20, 160, ink);           // closed
+      g.fillArc(ex, ey - 6, 9, 12, 20, 160, line);          // closed
     } else {
       float erx = 14 * p.eyeScale, ery = 16 * p.eyeScale * p.eyeOpen;
       g.fillEllipse(ex, ey, erx, ery, 0xFFFFFFu);
       float pr = 7.5f * p.eyeScale;
       g.fillEllipse(ex + p.px, ey + p.py, pr, fminf(pr, ery - 1), ink);
       if (ery > 8) g.fillSmoothCircle(ex + p.px - 3, ey + p.py - 3, 2, 0xFFFFFFu);
+      // Cheeky slanted eyelid, hidden when the eyes go wide.
+      if (p.eyeScale < 1.1f && ery > 8)
+        g.fillTriangle(ex - s * (erx + 2), ey - ery - 3, ex + s * (erx + 2), ey - ery - 3,
+                       ex + s * (erx + 2), ey - ery * 0.25f, body);
     }
+  }
+
+  // Small heart on the forehead.
+  {
+    float hx = x, hy = y - ry * 0.62f;
+    g.fillSmoothCircle(hx - 4, hy, 5, pink);
+    g.fillSmoothCircle(hx + 4, hy, 5, pink);
+    g.fillTriangle(hx - 9, hy + 1, hx + 9, hy + 1, hx, hy + 11, pink);
   }
 
   // Mouth.

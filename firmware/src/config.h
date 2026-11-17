@@ -35,6 +35,6 @@ constexpr uint32_t kRepeatMs = 250;
 constexpr int kBatteryLowPercent = 15;
 constexpr int kBatteryEmptyPercent = 4;
 
-constexpr uint32_t kPetColor = 0x8A6BFFu;        // default body colour (RGB888)
+constexpr uint32_t kPetColor = 0x3B3350u;        // default body colour (RGB888)
 
 }  // namespace zpod

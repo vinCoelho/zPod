@@ -34,6 +34,7 @@ void App::begin() {
   loaded_ = playing_ = false;
   battery_ = hal_.batteryPercent();
   pet_.setTired(battery_ < kBatteryLowPercent);
+  pet_.setColor(kPetColor);
   pet_.setMood(Mood::Idle);
   pet_.react(Reaction::Hello);
   screenOn_ = true;
