@@ -239,10 +239,10 @@ void Pet::draw(lgfx::LovyanGFX& g, int cx, int groundY, uint32_t shadowColor) co
       float pr = 7.5f * p.eyeScale;
       g.fillEllipse(ex + p.px, ey + p.py, pr, fminf(pr, ery - 1), ink);
       if (ery > 8) g.fillSmoothCircle(ex + p.px - 3, ey + p.py - 3, 2, 0xFFFFFFu);
-      // Cheeky slanted eyelid, hidden when the eyes go wide.
+      // Confident eyelid, lower towards the nose; hidden when the eyes go wide.
       if (p.eyeScale < 1.1f && ery > 8)
         g.fillTriangle(ex - s * (erx + 2), ey - ery - 3, ex + s * (erx + 2), ey - ery - 3,
-                       ex + s * (erx + 2), ey - ery * 0.25f, body);
+                       ex - s * (erx + 2), ey - ery * 0.45f, body);
     }
   }
 
